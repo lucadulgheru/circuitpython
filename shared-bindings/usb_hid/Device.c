@@ -214,14 +214,17 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_send_report);
 
-// TEST HELLO WORLD
-STATIC mp_obj_t usb_hid_device_hello_world(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
+//|     def hello_world(self) -> None:
+//|         """Displays a generic hello world message.
+//|         """
+//|         ...
+STATIC mp_obj_t usb_hid_device_hello_world(mp_obj_t self_in)
 {
+    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_usb_hid_device_hello_world(self);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_hello_world_obj, 1, usb_hid_device_hello_world);
-// TEST HELLO WORLD
+MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_hello_world_obj, usb_hid_device_hello_world);
 
 //|     def get_last_received_report(self, report_id: Optional[int] = None) -> Optional[bytes]:
 //|         """Get the last received HID OUT or feature report for the given report ID.
@@ -290,6 +293,7 @@ STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_get_last_received_report), MP_ROM_PTR(&usb_hid_device_get_last_received_report_obj)},
     {MP_ROM_QSTR(MP_QSTR_usage_page), MP_ROM_PTR(&usb_hid_device_usage_page_obj)},
     {MP_ROM_QSTR(MP_QSTR_usage), MP_ROM_PTR(&usb_hid_device_usage_obj)},
+    {MP_ROM_QSTR(MP_QSTR_hello_world), MP_ROM_PTR(&usb_hid_device_hello_world_obj)},
 
     {MP_ROM_QSTR(MP_QSTR_KEYBOARD), MP_ROM_PTR(&usb_hid_device_keyboard_obj)},
     {MP_ROM_QSTR(MP_QSTR_MOUSE), MP_ROM_PTR(&usb_hid_device_mouse_obj)},
