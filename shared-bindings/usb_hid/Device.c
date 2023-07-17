@@ -90,17 +90,26 @@
 //|     """Consumer Control device supporting sent values from 1-652, with no rollover.
 //|     Uses Report ID 3 for its IN report."""
 
-STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args)
+{
     usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
     self->base.type = &usb_hid_device_type;
-    enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_report_ids, ARG_in_report_lengths, ARG_out_report_lengths };
+    enum
+    {
+        ARG_report_descriptor,
+        ARG_usage_page,
+        ARG_usage,
+        ARG_report_ids,
+        ARG_in_report_lengths,
+        ARG_out_report_lengths
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_report_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_usage, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_report_ids, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_in_report_lengths, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_out_report_lengths, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        {MP_QSTR_report_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_usage, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_report_ids, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_in_report_lengths, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_out_report_lengths, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ},
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -126,9 +135,10 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
         mp_arg_validate_length_min((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(report_ids)), 1, MP_QSTR_report_ids);
 
     if ((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(in_report_lengths)) != report_ids_count ||
-        (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(out_report_lengths)) != report_ids_count) {
+        (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(out_report_lengths)) != report_ids_count)
+    {
         mp_raise_ValueError_varg(translate("%q, %q, and %q must all be the same length"),
-            MP_QSTR_report_ids, MP_QSTR_in_report_lengths, MP_QSTR_out_report_lengths);
+                                 MP_QSTR_report_ids, MP_QSTR_in_report_lengths, MP_QSTR_out_report_lengths);
     }
 
     uint8_t report_ids_array[report_ids_count];
@@ -136,7 +146,8 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     uint8_t out_report_lengths_array[report_ids_count];
 
     // Validate the ids and lengths are all integers in range.
-    for (size_t i = 0; i < report_ids_count; i++) {
+    for (size_t i = 0; i < report_ids_count; i++)
+    {
         mp_obj_t i_obj = MP_OBJ_NEW_SMALL_INT(i);
 
         report_ids_array[i] = (uint8_t)mp_arg_validate_int_range(
@@ -154,7 +165,8 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
             0, 255, MP_QSTR_out_report_lengths);
     }
 
-    if (report_ids_array[0] == 0 && report_ids_count > 1) {
+    if (report_ids_array[0] == 0 && report_ids_count > 1)
+    {
         mp_raise_ValueError_varg(translate("%q length must be %d"), MP_QSTR_report_id_space_0, 1);
     }
 
@@ -163,20 +175,24 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     return (mp_obj_t)self;
 }
 
-
 //|     def send_report(self, report: ReadableBuffer, report_id: Optional[int] = None) -> None:
 //|         """Send an HID report. If the device descriptor specifies zero or one report id's,
 //|         you can supply `None` (the default) as the value of ``report_id``.
 //|         Otherwise you must specify which report id to use when sending the report.
 //|         """
 //|         ...
-STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
+{
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_report, ARG_report_id };
+    enum
+    {
+        ARG_report,
+        ARG_report_id
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_report, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_report_id, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_report, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_report_id, MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -187,7 +203,8 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
 
     // -1 asks common_hal to determine the report id if possible.
     mp_int_t report_id_arg = -1;
-    if (args[ARG_report_id].u_obj != mp_const_none) {
+    if (args[ARG_report_id].u_obj != mp_const_none)
+    {
         report_id_arg = mp_obj_int_get_checked(args[ARG_report_id].u_obj);
     }
     const uint8_t report_id = common_hal_usb_hid_device_validate_report_id(self, report_id_arg);
@@ -197,6 +214,15 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_send_report);
 
+// TEST HELLO WORLD
+STATIC mp_obj_t usb_hid_device_hello_world(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
+{
+    common_hal_usb_hid_device_hello_world(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_hello_world_obj, 1, usb_hid_device_hello_world);
+// TEST HELLO WORLD
+
 //|     def get_last_received_report(self, report_id: Optional[int] = None) -> Optional[bytes]:
 //|         """Get the last received HID OUT or feature report for the given report ID.
 //|         The report ID may be omitted if there is no report ID, or only one report ID.
@@ -204,19 +230,24 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_sen
 //|         will return `None` until next report is received.
 //|         """
 //|         ...
-STATIC mp_obj_t usb_hid_device_get_last_received_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t usb_hid_device_get_last_received_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
+{
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_report_id };
+    enum
+    {
+        ARG_report_id
+    };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_report_id, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_report_id, MP_ARG_OBJ, {.u_obj = mp_const_none}},
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t report_id_arg = -1;
-    if (args[ARG_report_id].u_obj != mp_const_none) {
+    if (args[ARG_report_id].u_obj != mp_const_none)
+    {
         report_id_arg = mp_obj_int_get_checked(args[ARG_report_id].u_obj);
     }
     const uint8_t report_id = common_hal_usb_hid_device_validate_report_id(self, report_id_arg);
@@ -227,14 +258,15 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_get_last_received_report_obj, 1, usb_h
 
 //|     usage_page: int
 //|     """The device usage page identifier, which designates a category of device. (read-only)"""
-STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
+STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in)
+{
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage_page(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_page_obj, usb_hid_device_obj_get_usage_page);
 
 MP_PROPERTY_GETTER(usb_hid_device_usage_page_obj,
-    (mp_obj_t)&usb_hid_device_get_usage_page_obj);
+                   (mp_obj_t)&usb_hid_device_get_usage_page_obj);
 
 //|     usage: int
 //|     """The device usage identifier, which designates a specific kind of device. (read-only)
@@ -242,31 +274,32 @@ MP_PROPERTY_GETTER(usb_hid_device_usage_page_obj,
 //|     For example, Keyboard is 0x06 within the generic desktop usage page 0x01.
 //|     Mouse is 0x02 within the same usage page."""
 //|
-STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
+STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in)
+{
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_obj,
-    usb_hid_device_obj_get_usage);
+                          usb_hid_device_obj_get_usage);
 
 MP_PROPERTY_GETTER(usb_hid_device_usage_obj,
-    (mp_obj_t)&usb_hid_device_get_usage_obj);
+                   (mp_obj_t)&usb_hid_device_get_usage_obj);
 
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_send_report),              MP_ROM_PTR(&usb_hid_device_send_report_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_last_received_report), MP_ROM_PTR(&usb_hid_device_get_last_received_report_obj) },
-    { MP_ROM_QSTR(MP_QSTR_usage_page),               MP_ROM_PTR(&usb_hid_device_usage_page_obj) },
-    { MP_ROM_QSTR(MP_QSTR_usage),                    MP_ROM_PTR(&usb_hid_device_usage_obj) },
+    {MP_ROM_QSTR(MP_QSTR_send_report), MP_ROM_PTR(&usb_hid_device_send_report_obj)},
+    {MP_ROM_QSTR(MP_QSTR_get_last_received_report), MP_ROM_PTR(&usb_hid_device_get_last_received_report_obj)},
+    {MP_ROM_QSTR(MP_QSTR_usage_page), MP_ROM_PTR(&usb_hid_device_usage_page_obj)},
+    {MP_ROM_QSTR(MP_QSTR_usage), MP_ROM_PTR(&usb_hid_device_usage_obj)},
 
-    { MP_ROM_QSTR(MP_QSTR_KEYBOARD),                 MP_ROM_PTR(&usb_hid_device_keyboard_obj) },
-    { MP_ROM_QSTR(MP_QSTR_MOUSE),                    MP_ROM_PTR(&usb_hid_device_mouse_obj) },
-    { MP_ROM_QSTR(MP_QSTR_CONSUMER_CONTROL),         MP_ROM_PTR(&usb_hid_device_consumer_control_obj) },
+    {MP_ROM_QSTR(MP_QSTR_KEYBOARD), MP_ROM_PTR(&usb_hid_device_keyboard_obj)},
+    {MP_ROM_QSTR(MP_QSTR_MOUSE), MP_ROM_PTR(&usb_hid_device_mouse_obj)},
+    {MP_ROM_QSTR(MP_QSTR_CONSUMER_CONTROL), MP_ROM_PTR(&usb_hid_device_consumer_control_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
 
 const mp_obj_type_t usb_hid_device_type = {
-    { &mp_type_type },
+    {&mp_type_type},
     .name = MP_QSTR_Device,
     .make_new = usb_hid_device_make_new,
     .locals_dict = (mp_obj_t)&usb_hid_device_locals_dict,
